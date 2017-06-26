@@ -29,7 +29,6 @@ jobs:
       - run:
           name: Push Docker Image
           command: |
-            set -x
             docker login -u $DOCKER_USER -p $DOCKER_PASS
             docker push ${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_BUILD_NUM}
             docker push ${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}:latest

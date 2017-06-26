@@ -1,33 +1,31 @@
 version: 2
 jobs:
   build:
-    working_directory: ~/mern-starter
+    environment:
     docker:
-      - image: circleci/node:4.8.2
+      - image: alpine:3.5
+    working_directory: /home/ubuntu/${CIRCLE_PROJECT_REPONAME}
     steps:
+      - setup_docker_engine
+      - run:
+          name: Install Docker client
+          command: |
+            set -x
+            VER="17.03.0-ce"
+            apk add --update curl
+            curl -L -o /tmp/docker-$VER.tgz https://get.docker.com/builds/Linux/x86_64/docker-$VER.tgz
+            tar -xz -C /tmp -f /tmp/docker-$VER.tgz
+            mv /tmp/docker/* /usr/bin
       - checkout
       - run:
-          name: update-npm
-          command: 'sudo npm install -g npm@latest'
-      - restore_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
+          name: Build Docker image
+          command: docker build -t ${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_BUILD_NUM} .
       - run:
-          name: npm install
-          command: npm install
-      - save_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
-          paths:
-            - ./node_modules
+          name: Run Tests
+          command: npm run test
       - run:
-          name: test
-          command: npm test
-      - run:
-          name: install docker
-          command: ./scripts/install_docker.sh
-      - run:
-          name: Build and push Docker image
+          name: Push Docker Image
           command: |
-            IMAGE="${CIRCLE_PROJECT_USERNAME}/docker-devops-test-webapp:${CIRCLE_BUILD_NUM}"
-            docker build -t $IMAGE .
-            docker login -u $DOCKER_LOGIN -p $DOCKER_PASSWORD
-            docker push $IMAGE
+            set -x
+            docker login -u $DOCKER_USER -p $DOCKER_PASS
+            docker push ${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_BUILD_NUM}

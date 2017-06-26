@@ -3,7 +3,7 @@ jobs:
   build:
     environment:
     docker:
-      - image: alpine-node:6.11
+      - image: mhart/alpine-node:6.11
     working_directory: /home/ubuntu/${CIRCLE_PROJECT_REPONAME}
     steps:
       - setup_docker_engine
